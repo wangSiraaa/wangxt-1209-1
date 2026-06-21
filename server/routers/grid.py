@@ -81,10 +81,22 @@ async def confirm_grid(
         db, AuditEntity.grid, grid.id, AuditAction.confirmed, current_user,
         detail={"turbine_id": str(grid.turbine_id)},
     )
+
+    new_grid = GridConnection(
+        turbine_id=grid.turbine_id,
+        status=GridStatus.pending,
+    )
+    db.add(new_grid)
+    await db.flush()
+
+    await write_audit(
+        db, AuditEntity.grid, new_grid.id, AuditAction.created, current_user,
+        detail={"turbine_id": str(grid.turbine_id), "previous_grid_id": str(grid.id)},
+    )
     await db.commit()
     result = await db.execute(
         select(GridConnection)
         .options(*GRID_LOAD_OPTIONS)
-        .where(GridConnection.id == grid_id)
+        .where(GridConnection.id == new_grid.id)
     )
     return result.scalar_one()

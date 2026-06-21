@@ -43,19 +43,21 @@ async def _freeze_grid(
     operator: User,
     reason: str,
 ):
+    from sqlalchemy import desc
+
     result = await db.execute(
-        select(GridConnection).where(GridConnection.turbine_id == turbine_id)
+        select(GridConnection)
+        .where(
+            GridConnection.turbine_id == turbine_id,
+            GridConnection.status != GridStatus.confirmed,
+        )
+        .order_by(desc(GridConnection.created_at))
     )
     grid = result.scalar_one_or_none()
     if not grid:
         grid = GridConnection(turbine_id=turbine_id, status=GridStatus.pending)
         db.add(grid)
         await db.flush()
-
-    if grid.status == GridStatus.confirmed:
-        grid.status = GridStatus.pending
-        grid.confirmed_at = None
-        grid.confirmed_by = None
 
     grid.status = GridStatus.frozen
     grid.frozen_reason = reason
@@ -150,6 +152,24 @@ async def create_defect(
     insp = insp_result.scalar_one_or_none()
     if not insp:
         raise HTTPException(status_code=404, detail="巡检不存在")
+
+    if insp.status != InspectionStatus.submitted:
+        raise HTTPException(
+            status_code=400,
+            detail=f"巡检状态为「{insp.status.value}」，仅已提交的巡检可标注缺陷",
+        )
+
+    if photo.inspection_id != data.inspection_id:
+        raise HTTPException(
+            status_code=400,
+            detail="该照片不属于所选巡检，请重新选择",
+        )
+
+    if photo.blade_no != data.blade_no or photo.side != data.side:
+        raise HTTPException(
+            status_code=400,
+            detail="叶片号或叶面与照片信息不匹配，请重新选择",
+        )
 
     defect = Defect(
         inspection_id=data.inspection_id,

@@ -134,8 +134,15 @@ async def close_repair_order(
     repair.closed_at = datetime.utcnow()
     repair.closure_notes = data.closure_notes
 
+    from sqlalchemy import desc
+
     grid_result = await db.execute(
-        select(GridConnection).where(GridConnection.turbine_id == repair.turbine_id)
+        select(GridConnection)
+        .where(
+            GridConnection.turbine_id == repair.turbine_id,
+            GridConnection.status != GridStatus.confirmed,
+        )
+        .order_by(desc(GridConnection.created_at))
     )
     grid = grid_result.scalar_one_or_none()
     if grid and grid.status == GridStatus.frozen and grid.frozen_by_defect_id == repair.defect_id:
