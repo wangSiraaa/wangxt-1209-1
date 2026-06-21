@@ -106,6 +106,7 @@ export interface Defect {
   severity: DefectSeverity
   previous_severity?: DefectSeverity
   description?: string
+  review_notes?: string
   annotated_by: string
   status: DefectStatus
   created_at: string

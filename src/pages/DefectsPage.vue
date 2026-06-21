@@ -34,6 +34,7 @@ const form = reactive({
   defect_type: 'crack' as DefectType,
   severity: 'L1' as DefectSeverity,
   description: '',
+  review_notes: '',
 })
 
 const showEscalationNote = computed(
@@ -42,7 +43,7 @@ const showEscalationNote = computed(
 
 function resetForm() {
   form.inspection_id = ''; form.photo_id = ''; form.blade_no = 0; form.side = ''
-  form.defect_type = 'crack'; form.severity = 'L1'; form.description = ''
+  form.defect_type = 'crack'; form.severity = 'L1'; form.description = ''; form.review_notes = ''
   inspections.value = []; photos.value = []
 }
 
@@ -105,6 +106,7 @@ function openEdit(row: Defect) {
   form.defect_type = row.defect_type
   form.severity = row.severity
   form.description = row.description || ''
+  form.review_notes = row.review_notes || ''
   form.photo_id = row.photo_id
   form.blade_no = row.blade_no
   form.side = row.side
@@ -127,6 +129,7 @@ async function handleSave() {
         defect_type: form.defect_type,
         severity: form.severity,
         description: form.description || undefined,
+        review_notes: form.review_notes || undefined,
       })
       ElMessage.success('缺陷标注成功')
       dialogVisible.value = false
@@ -143,6 +146,7 @@ async function handleSave() {
       await api.updateDefect(editing.value.id, {
         severity: form.severity,
         description: form.description,
+        review_notes: form.review_notes,
       })
       ElMessage.success('缺陷已更新')
       dialogVisible.value = false
@@ -259,7 +263,10 @@ onMounted(async () => {
             <el-alert type="warning" :closable="false" show-icon title="等级升高将自动冻结并网确认" />
           </el-form-item>
           <el-form-item label="描述">
-            <el-input v-model="form.description" type="textarea" :rows="3" placeholder="缺陷描述（可选）" />
+            <el-input v-model="form.description" type="textarea" :rows="2" placeholder="缺陷描述（可选）" />
+          </el-form-item>
+          <el-form-item label="复核备注">
+            <el-input v-model="form.review_notes" type="textarea" :rows="3" placeholder="复核说明与建议处理方式（可选）" />
           </el-form-item>
         </el-form>
       </div>

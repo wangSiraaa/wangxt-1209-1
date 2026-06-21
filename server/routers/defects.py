@@ -179,6 +179,7 @@ async def create_defect(
         defect_type=data.defect_type,
         severity=data.severity,
         description=data.description,
+        review_notes=data.review_notes,
         annotated_by=current_user.id,
         status=DefectStatus.open,
     )
@@ -231,6 +232,8 @@ async def update_defect(
 
     if data.description is not None:
         defect.description = data.description
+    if data.review_notes is not None:
+        defect.review_notes = data.review_notes
     if data.status is not None:
         defect.status = data.status
     defect.updated_at = datetime.utcnow()

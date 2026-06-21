@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { api } from '@/api'
@@ -90,6 +90,10 @@ function defectOptionLabel(d: Defect): string {
   return `${d.turbine?.code || ''} ${d.blade_no}# ${SIDE_LABELS[d.side]} · ${DEFECT_TYPE_LABELS[d.defect_type]} ${SEVERITY_LABELS[d.severity]}`
 }
 
+const selectedDefect = computed(() =>
+  openDefects.value.find((d) => d.id === createForm.defect_id) || null,
+)
+
 async function handleCreate() {
   if (!createForm.defect_id) {
     ElMessage.warning('请选择关联缺陷')
@@ -145,13 +149,22 @@ onMounted(async () => {
         <el-table-column label="机组" min-width="110">
           <template #default="{ row }"><span class="font-mono text-slate-300">{{ row.turbine?.code || '—' }}</span></template>
         </el-table-column>
-        <el-table-column label="关联缺陷" min-width="170">
+        <el-table-column label="关联缺陷" min-width="200">
           <template #default="{ row }">
             <template v-if="row.defect">
-              <el-tag effect="dark" size="small">{{ DEFECT_TYPE_LABELS[row.defect.defect_type as DefectType] }}</el-tag>
-              <el-tag :type="(SEVERITY_COLORS[row.defect.severity as DefectSeverity] || '') as any" effect="dark" size="small" class="ml-1">
-                {{ SEVERITY_LABELS[row.defect.severity as DefectSeverity] }}
-              </el-tag>
+              <el-tooltip v-if="row.defect.review_notes" :content="`复核备注：${row.defect.review_notes}`" placement="top">
+                <el-tag effect="dark" size="small" class="mr-1">{{ DEFECT_TYPE_LABELS[row.defect.defect_type as DefectType] }}</el-tag>
+                <el-tag :type="(SEVERITY_COLORS[row.defect.severity as DefectSeverity] || '') as any" effect="dark" size="small" class="ml-1">
+                  {{ SEVERITY_LABELS[row.defect.severity as DefectSeverity] }}
+                </el-tag>
+                <el-icon class="ml-1 text-sky-400 text-sm align-middle"><ChatDotRound /></el-icon>
+              </el-tooltip>
+              <template v-else>
+                <el-tag effect="dark" size="small">{{ DEFECT_TYPE_LABELS[row.defect.defect_type as DefectType] }}</el-tag>
+                <el-tag :type="(SEVERITY_COLORS[row.defect.severity as DefectSeverity] || '') as any" effect="dark" size="small" class="ml-1">
+                  {{ SEVERITY_LABELS[row.defect.severity as DefectSeverity] }}
+                </el-tag>
+              </template>
             </template>
             <span v-else class="text-slate-500">—</span>
           </template>
@@ -205,6 +218,13 @@ onMounted(async () => {
             <el-option v-for="d in openDefects" :key="d.id" :label="defectOptionLabel(d)" :value="d.id" />
           </el-select>
         </el-form-item>
+        <div v-if="selectedDefect?.review_notes" class="mb-4 rounded-lg border border-sky-700/50 bg-sky-900/20 p-3">
+          <div class="text-xs font-medium text-sky-400 mb-1 flex items-center gap-1">
+            <el-icon class="text-sm"><ChatDotRound /></el-icon>
+            复核备注
+          </div>
+          <p class="text-sm text-slate-200 whitespace-pre-wrap">{{ selectedDefect.review_notes }}</p>
+        </div>
         <el-form-item label="决策">
           <el-radio-group v-model="createForm.decision">
             <el-radio-button value="repair">停机维修</el-radio-button>

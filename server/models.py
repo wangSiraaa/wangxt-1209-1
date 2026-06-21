@@ -197,6 +197,7 @@ class Defect(Base):
     severity: Mapped[DefectSeverity] = mapped_column(Enum(DefectSeverity, name="defect_severity"), nullable=False)
     previous_severity: Mapped[DefectSeverity | None] = mapped_column(Enum(DefectSeverity, name="defect_severity"))
     description: Mapped[str | None] = mapped_column(Text)
+    review_notes: Mapped[str | None] = mapped_column(Text)
     annotated_by: Mapped[UUID] = mapped_column(PG_UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
     status: Mapped[DefectStatus] = mapped_column(Enum(DefectStatus, name="defect_status"), default=DefectStatus.open)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow)

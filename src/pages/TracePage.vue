@@ -190,6 +190,10 @@ onMounted(async () => {
               <span class="ml-auto text-xs text-slate-500">{{ d.blade_no }}# {{ SIDE_LABELS[d.side] }}</span>
             </div>
             <p class="text-sm text-slate-300 mb-2">{{ d.description || '无描述' }}</p>
+            <div v-if="d.review_notes" class="rounded border border-sky-700/50 bg-sky-900/20 p-2 mb-2">
+              <div class="text-xs font-medium text-sky-400 mb-1">复核备注</div>
+              <p class="text-sm text-slate-200 whitespace-pre-wrap">{{ d.review_notes }}</p>
+            </div>
             <div class="text-xs text-slate-500 flex justify-between">
               <span>{{ d.annotator?.display_name || '—' }}</span>
               <span>{{ formatDateTime(d.created_at) }}</span>

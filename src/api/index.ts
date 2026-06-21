@@ -99,12 +99,14 @@ export const api = {
     defect_type: DefectType
     severity: DefectSeverity
     description?: string
+    review_notes?: string
   }) => request.post<unknown, Defect>('/defects', data),
   updateDefect: (
     id: string,
     data: Partial<{
       severity: DefectSeverity
       description: string
+      review_notes: string
       status: DefectStatus
     }>,
   ) => request.put<unknown, Defect>(`/defects/${id}`, data),

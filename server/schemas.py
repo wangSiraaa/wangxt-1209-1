@@ -150,11 +150,13 @@ class DefectCreate(BaseModel):
     defect_type: DefectType
     severity: DefectSeverity
     description: str | None = None
+    review_notes: str | None = None
 
 
 class DefectUpdate(BaseModel):
     severity: DefectSeverity | None = None
     description: str | None = None
+    review_notes: str | None = None
     status: DefectStatus | None = None
 
 
@@ -168,6 +170,7 @@ class DefectOut(ORMBase):
     severity: DefectSeverity
     previous_severity: DefectSeverity | None
     description: str | None
+    review_notes: str | None
     annotated_by: UUID
     status: DefectStatus
     created_at: datetime
